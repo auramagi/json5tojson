@@ -2,6 +2,20 @@ import ArgumentParser
 import Foundation
 
 struct JSON5toJSON: ParsableCommand {
+    static var configuration = CommandConfiguration(
+        commandName: "json5tojson",
+        abstract: "Convert JSON5 to JSON"
+    )
+    
+    @Flag(name: .shortAndLong, help: "Allow fragments")
+    var allowFragments = false
+    
+    @Flag(name: .shortAndLong, help: "Pretty print output")
+    var prettyPrint = false
+    
+    @Flag(name: .shortAndLong, help: "Sort object keys in output")
+    var sortKeys = false
+    
     @Argument(
         help: "Input JSON5 file",
         completion: .file()
@@ -40,11 +54,17 @@ extension JSON5toJSON {
     }
     
     var readingOptions: JSONSerialization.ReadingOptions {
-        [.json5Allowed]
+        var options: JSONSerialization.ReadingOptions = .json5Allowed
+        if allowFragments { options.insert(.fragmentsAllowed) }
+        return options
     }
     
     var writingOptions: JSONSerialization.WritingOptions {
-        [.prettyPrinted]
+        var options: JSONSerialization.WritingOptions = []
+        if allowFragments { options.insert(.fragmentsAllowed) }
+        if prettyPrint { options.insert(.prettyPrinted) }
+        if sortKeys { options.insert(.sortedKeys) }
+        return options
     }
     
     func read() throws -> Any {
