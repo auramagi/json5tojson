@@ -29,3 +29,7 @@ $ mint install auramagi/json5tojson
   ```
 
 Run `json5tojson --help` to see all options.
+
+### Limitations
+
+Positive/negative inifinity and NaN cannot be represented in JSON and will throw an error if present in the input file.
