@@ -2,10 +2,16 @@ import ArgumentParser
 import Foundation
 
 struct JSON5toJSON: ParsableCommand {
-    @Argument(help: "Input JSON5 file", completion: .file())
+    @Argument(
+        help: "Input JSON5 file",
+        completion: .file()
+    )
     var input: String
     
-    @Argument(help: "Input JSON5 file", completion: .file())
+    @Argument(
+        help: ArgumentHelp("Output file", discussion: "Write conversion output to this file. If not specified, output is sent to stdout."),
+        completion: .file()
+    )
     var output: String?
     
     func run() throws {
@@ -63,6 +69,7 @@ extension JSON5toJSON {
         if let error = error {
             throw "Error while writing conversion output: \(error)"
         }
+        stream.write([10], maxLength: 1) // Write newline at the end ([10] is "\n")
     }
 }
 
