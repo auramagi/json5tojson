@@ -1,7 +1,6 @@
 import ArgumentParser
 import Foundation
 
-
 struct JSON5toJSON: ParsableCommand {
     @Argument(help: "Input JSON5 file", completion: .file())
     var input: String
@@ -9,6 +8,13 @@ struct JSON5toJSON: ParsableCommand {
     @Argument(help: "Input JSON5 file", completion: .file())
     var output: String?
     
+    func run() throws {
+        let json = try read()
+        try write(json)
+    }
+}
+
+extension JSON5toJSON {
     func makeInputStream() throws -> InputStream {
         guard FileManager.default.fileExists(atPath: input) else {
             throw "Not file at path \(input)"
@@ -35,20 +41,28 @@ struct JSON5toJSON: ParsableCommand {
         [.prettyPrinted]
     }
     
-    func run() throws {
-        let inputStream = try makeInputStream()
-        inputStream.open()
-        defer { inputStream.close() }
+    func read() throws -> Any {
+        let stream = try makeInputStream()
+        stream.open()
+        defer { stream.close() }
         
-        let json = try JSONSerialization.jsonObject(with: inputStream, options: readingOptions)
-        
-        let outputStream = try makeOutputStream()
-        outputStream.open()
-        defer { outputStream.close() }
+        do {
+            return try JSONSerialization.jsonObject(with: stream, options: readingOptions)
+        } catch {
+            throw "Error decoding JSON5 file: \(error)"
+        }
+    }
+    
+    func write(_ json: Any) throws {
+        let stream = try makeOutputStream()
+        stream.open()
+        defer { stream.close() }
         
         var error: NSError?
-        JSONSerialization.writeJSONObject(json, to: outputStream, options: writingOptions, error: &error)
-        if let error = error { throw error }
+        JSONSerialization.writeJSONObject(json, to: stream, options: writingOptions, error: &error)
+        if let error = error {
+            throw "Error while writing conversion output: \(error)"
+        }
     }
 }
 
